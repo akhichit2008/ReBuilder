@@ -15,17 +15,14 @@ class CityBuilderEnv(gym.Env):
         self.population = None
         self.city_type = None
         self.used_coords = []
+        self.data = {}
+        self.map_data = {}
 
         # Load existing data from the file and populate used_coords
-        with open("map.json", 'r') as fstream:
-            existing_data = json.load(fstream)
-        
-        for i in existing_data:
-            for x in i["tiles"]:
-                self.used_coords.append((x["x"], x["y"]))
-            for j in i["objects"]:
-                self.used_coords.append((j["x"], j["y"]))
-
+        self.fstream = open("map.json","r")
+        self.map_data = existing_data = json.load(self.fstream)
+        for i in existing_data["objects"]:
+            self.used_coords.append((i["x"], i["y"]))
     def reset(self, population, city_type):
         # Reset the environment to a new state
         self.population = population
@@ -36,7 +33,25 @@ class CityBuilderEnv(gym.Env):
     def step(self, action):
         # Perform the given action and return the resulting state, reward, and done flag
         if action == 0:  # Add House
-            pass
+            f = True
+            while f:
+                x = random.randint(1,400)
+                y = random.randint(1,400)
+                if (x,y) not in self.map_data["objects"]:
+                        new_object = {
+                                "x": x,
+                                "y": y,
+                                "type": "house"
+                        }
+                        self.map_data["objects"].append(new_object)
+
+# Write the updated JSON data back to the file
+                        with open("map.json", "a") as file:
+                            json.dump(self.map_data, file, indent=4)
+                    
+                else:
+                    continue
+
 
         elif action == 1:  # Add Factory
             pass
@@ -78,3 +93,4 @@ class CityBuilderEnv(gym.Env):
 
 city_env = CityBuilderEnv()
 print(city_env.used_coords)
+city_env.step(0)
