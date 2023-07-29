@@ -1,46 +1,51 @@
 {
-  "map_name": "Mystery Island",
-  "map_size": {
-    "width": 400,
-    "height": 400
-  },
-  "tiles": [
-    {
-      "x": 0,
-      "y": 0,
-      "type": "garden"
+    "map_name": "Mystery Island",
+    "map_size": {
+        "width": 400,
+        "height": 400
     },
-    {
-      "x": 1,
-      "y": 0,
-      "type": "garden"
-    },
-    {
-      "x": 2,
-      "y": 0,
-      "type": "garden"
-    }
-  ],
-  "objects": [
-    {
-      "x": 250,
-      "y": 14,
-      "type": "house"
-    },
-    {
-      "x": 350,
-      "y": 320,
-      "type": "house"
-    },
-    {
-      "x": 200,
-      "y": 50,
-      "type": "factory"
-    },
-    {
-      "x": 120,
-      "y": 120,
-      "type": "factory"
-    }
-  ]
+    "tiles": [
+        {
+            "x": 0,
+            "y": 0,
+            "type": "garden"
+        },
+        {
+            "x": 1,
+            "y": 0,
+            "type": "garden"
+        },
+        {
+            "x": 2,
+            "y": 0,
+            "type": "garden"
+        }
+    ],
+    "objects": [
+        {
+            "x": 250,
+            "y": 14,
+            "type": "house"
+        },
+        {
+            "x": 350,
+            "y": 320,
+            "type": "house"
+        },
+        {
+            "x": 200,
+            "y": 50,
+            "type": "factory"
+        },
+        {
+            "x": 120,
+            "y": 120,
+            "type": "factory"
+        },
+        {
+            "x": 239,
+            "y": 55,
+            "type": "house"
+        }
+    ]
 }

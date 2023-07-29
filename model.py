@@ -19,7 +19,7 @@ class CityBuilderEnv(gym.Env):
         self.map_data = {}
 
         # Load existing data from the file and populate used_coords
-        self.fstream = open("map.json","r")
+        self.fstream = open("model_testing.json","r")
         self.map_data = existing_data = json.load(self.fstream)
         for i in existing_data["objects"]:
             self.used_coords.append((i["x"], i["y"]))
@@ -31,23 +31,30 @@ class CityBuilderEnv(gym.Env):
         return self._get_observation()
 
     def step(self, action):
-        # Perform the given action and return the resulting state, reward, and done flag
+    # ... (Previous implementation remains the same) ...
+
         if action == 0:  # Add House
             f = True
             while f:
-                x = random.randint(1,400)
-                y = random.randint(1,400)
-                if (x,y) not in self.map_data["objects"]:
-                        new_object = {
-                                "x": x,
-                                "y": y,
-                                "type": "house"
-                        }
-                        self.map_data["objects"].append(new_object)
+                x = random.randint(1, 400)
+                y = random.randint(1, 400)
+                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
+                    new_object = {
+                    "x": x,
+                    "y": y,
+                    "type": "house"
+                    }
+                    self.map_data["objects"].append(new_object)
+                    f = False
 
-# Write the updated JSON data back to the file
-                        with open("map.json", "a") as file:
+    # ... (Action 1 and 2 remain unchanged) ...
+
+    # Write the updated JSON data back to the file, appending only the new entry
+                    with open("map.json", "w") as file:
                             json.dump(self.map_data, file, indent=4)
+
+    # ... (Reward calculation and termination checks remain unchanged) ...
+
                     
                 else:
                     continue
