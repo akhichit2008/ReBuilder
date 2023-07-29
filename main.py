@@ -19,6 +19,11 @@ map_height = int(map_data["map_size"]["height"])
 
 screen = pygame.display.set_mode((map_width, map_height))
 
+# Load the custom images for houses, factories, and gardens
+house_image = pygame.image.load("house.png")
+factory_image = pygame.image.load("factory.png")
+garden_image = pygame.image.load("garden.png")
+
 # Create a sprite group for the objects
 objects = pygame.sprite.Group()
 
@@ -42,25 +47,23 @@ for obj_data in map_data["objects"]:
 
     if obj_type == "house":
         obj = pygame.sprite.Sprite()
-        obj.image = pygame.Surface((100, 100))
-        obj.image.fill(RED)
+        obj.image = house_image  # Use the loaded house image
         obj.rect = obj.image.get_rect()
         obj.rect.center = (obj_x, obj_y)
         objects.add(obj)
 
     elif obj_type == "factory":
         obj = pygame.sprite.Sprite()
-        obj.image = pygame.Surface((50, 50))
-        obj.image.fill(GREEN)
+        obj.image = factory_image  # Use the loaded factory image
         obj.rect = obj.image.get_rect()
         obj.rect.center = (obj_x, obj_y)
         objects.add(obj)
+
     elif obj_type == "garden":
         obj = pygame.sprite.Sprite()
-        obj.image = pygame.Surface()
-        obj.image.fill((50,60,80))
+        obj.image = garden_image  # Use the loaded garden image
         obj.rect = obj.image.get_rect()
-        obj.rect.center = (obj_x,obj_y)
+        obj.rect.center = (obj_x, obj_y)
         objects.add(obj)
 
 # Run the game loop
