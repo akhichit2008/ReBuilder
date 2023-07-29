@@ -76,7 +76,36 @@ class CityBuilderEnv(gym.Env):
         return [self.population, self.city_type]
 
     def _calculate_reward(self):
-        pass
+    # Get the current population and city type from the observation
+        current_population, current_city_type = self._get_observation()
+
+    # Calculate the reward based on the changes in population and building additions
+        reward = 0
+
+    # Calculate the population increment based on the difference from the previous population
+        if self.population is not None:
+            population_increment = self.population - current_population
+            reward += population_increment
+
+    # Calculate the reward for each building type based on the number of buildings added
+        num_houses_added = 0
+        num_factories_added = 0
+        num_gardens_added = 0
+
+        for obj in self.map_data["objects"]:
+            if obj["type"] == "house":
+                num_houses_added += 1
+            elif obj["type"] == "factory":
+                num_factories_added += 1
+            elif obj["type"] == "garden":
+                num_gardens_added += 1
+
+        reward += num_houses_added
+        reward += 3 * num_factories_added
+        reward += 2 * num_gardens_added
+
+        return reward
+
 
     def _is_done(self):
         pass
