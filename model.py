@@ -1,7 +1,10 @@
 import gym
 from gym import spaces
+from agents import *
 import json
 import random
+import os
+import numpy as np
 
 class CityBuilderEnv(gym.Env):
     def __init__(self):
@@ -61,56 +64,10 @@ class CityBuilderEnv(gym.Env):
 
 
         elif action == 1:  # Add Factory
-             f = True
-            while f:
-                x = random.randint(1, 400)
-                y = random.randint(1, 400)
-                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
-                    new_object = {
-                    "x": x,
-                    "y": y,
-                    "type": "factory"
-                    }
-                    self.map_data["objects"].append(new_object)
-                    f = False
-
-    # ... (Action 1 and 2 remain unchanged) ...
-
-    # Write the updated JSON data back to the file, appending only the new entry
-                    with open("map.json", "w") as file:
-                            json.dump(self.map_data, file, indent=4)
-
-    # ... (Reward calculation and termination checks remain unchanged) ...
-
-                    
-                else:
-                    continue
+            pass
 
         elif action == 2:  # Add Garden
-             f = True
-            while f:
-                x = random.randint(1, 400)
-                y = random.randint(1, 400)
-                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
-                    new_object = {
-                    "x": x,
-                    "y": y,
-                    "type": "garden"
-                    }
-                    self.map_data["objects"].append(new_object)
-                    f = False
-
-    # ... (Action 1 and 2 remain unchanged) ...
-
-    # Write the updated JSON data back to the file, appending only the new entry
-                    with open("map.json", "w") as file:
-                            json.dump(self.map_data, file, indent=4)
-
-    # ... (Reward calculation and termination checks remain unchanged) ...
-
-                    
-                else:
-                    continue
+            pass
 
         else:
             raise ValueError("Invalid action.")
@@ -164,7 +121,7 @@ class CityBuilderEnv(gym.Env):
         pass
 
     def render(self):
-        pass
+        os.system("python main.py")
 
     def save_map(self, filename):
         pass
@@ -174,5 +131,57 @@ class CityBuilderEnv(gym.Env):
 
 
 city_env = CityBuilderEnv()
+'''
 print(city_env.used_coords)
 city_env.step(0)
+city_env.render()
+city_env.step(1)
+city_env.step(2)
+'''
+# Define Q-learning parameters
+learning_rate = 0.1
+discount_factor = 0.9
+epsilon = 0.1
+num_episodes = 1000
+
+# Create the environment (CityBuilderEnv instance)
+city_env = CityBuilderEnv()
+
+# Create the Q-learning agent
+q_agent = QLearningAgent(city_env.action_space, city_env.observation_space)
+
+# Q-learning training loop
+for episode in range(num_episodes):
+    state = city_env.reset(population=np.random.uniform(0, 1), city_type=np.random.uniform(0, 1))
+    done = False
+
+    while not done:
+        # Choose action using epsilon-greedy strategy
+        action = q_agent.choose_action(state)
+        
+        next_state, reward, done, _ = city_env.step(action)
+        next_state_idx = np.argmax(next_state)
+        
+        # Update Q-values
+        q_agent.update_q_table(state, action, reward, next_state_idx)
+
+        state = next_state
+
+print("Training completed.")
+
+# Evaluate the trained agent
+num_eval_episodes = 10
+total_rewards = 0
+
+for _ in range(num_eval_episodes):
+    state = city_env.reset(population=np.random.uniform(0, 1), city_type=np.random.uniform(0, 1))
+    done = False
+
+    while not done:
+        action = np.argmax(q_agent.q_table[state, :])
+        next_state, reward, done, _ = city_env.step(action)
+        total_rewards += reward
+        state = next_state
+
+average_rewards = total_rewards / num_eval_episodes
+print("Average rewards:", average_rewards)
