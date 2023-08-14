@@ -61,10 +61,56 @@ class CityBuilderEnv(gym.Env):
 
 
         elif action == 1:  # Add Factory
-            pass
+             f = True
+            while f:
+                x = random.randint(1, 400)
+                y = random.randint(1, 400)
+                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
+                    new_object = {
+                    "x": x,
+                    "y": y,
+                    "type": "factory"
+                    }
+                    self.map_data["objects"].append(new_object)
+                    f = False
+
+    # ... (Action 1 and 2 remain unchanged) ...
+
+    # Write the updated JSON data back to the file, appending only the new entry
+                    with open("map.json", "w") as file:
+                            json.dump(self.map_data, file, indent=4)
+
+    # ... (Reward calculation and termination checks remain unchanged) ...
+
+                    
+                else:
+                    continue
 
         elif action == 2:  # Add Garden
-            pass
+             f = True
+            while f:
+                x = random.randint(1, 400)
+                y = random.randint(1, 400)
+                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
+                    new_object = {
+                    "x": x,
+                    "y": y,
+                    "type": "garden"
+                    }
+                    self.map_data["objects"].append(new_object)
+                    f = False
+
+    # ... (Action 1 and 2 remain unchanged) ...
+
+    # Write the updated JSON data back to the file, appending only the new entry
+                    with open("map.json", "w") as file:
+                            json.dump(self.map_data, file, indent=4)
+
+    # ... (Reward calculation and termination checks remain unchanged) ...
+
+                    
+                else:
+                    continue
 
         else:
             raise ValueError("Invalid action.")
