@@ -1,7 +1,17 @@
 import gym
 from gym import spaces
+from agents import *
 import json
 import random
+import os
+import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense,Flatten
+from tensorflow.keras.optimizers import Adam
+from rl.agents import DQNAgent
+from rl.policy import BoltzmannQPolicy
+from rl.memory import SequentialMemory
+
 
 class CityBuilderEnv(gym.Env):
     def __init__(self):
@@ -61,56 +71,10 @@ class CityBuilderEnv(gym.Env):
 
 
         elif action == 1:  # Add Factory
-             f = True
-            while f:
-                x = random.randint(1, 400)
-                y = random.randint(1, 400)
-                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
-                    new_object = {
-                    "x": x,
-                    "y": y,
-                    "type": "factory"
-                    }
-                    self.map_data["objects"].append(new_object)
-                    f = False
-
-    # ... (Action 1 and 2 remain unchanged) ...
-
-    # Write the updated JSON data back to the file, appending only the new entry
-                    with open("map.json", "w") as file:
-                            json.dump(self.map_data, file, indent=4)
-
-    # ... (Reward calculation and termination checks remain unchanged) ...
-
-                    
-                else:
-                    continue
+            pass
 
         elif action == 2:  # Add Garden
-             f = True
-            while f:
-                x = random.randint(1, 400)
-                y = random.randint(1, 400)
-                if (x, y) not in [(obj["x"], obj["y"]) for obj in self.map_data["objects"]]:
-                    new_object = {
-                    "x": x,
-                    "y": y,
-                    "type": "garden"
-                    }
-                    self.map_data["objects"].append(new_object)
-                    f = False
-
-    # ... (Action 1 and 2 remain unchanged) ...
-
-    # Write the updated JSON data back to the file, appending only the new entry
-                    with open("map.json", "w") as file:
-                            json.dump(self.map_data, file, indent=4)
-
-    # ... (Reward calculation and termination checks remain unchanged) ...
-
-                    
-                else:
-                    continue
+            pass
 
         else:
             raise ValueError("Invalid action.")
@@ -164,7 +128,7 @@ class CityBuilderEnv(gym.Env):
         pass
 
     def render(self):
-        pass
+        os.system("python main.py")
 
     def save_map(self, filename):
         pass
@@ -174,5 +138,37 @@ class CityBuilderEnv(gym.Env):
 
 
 city_env = CityBuilderEnv()
+states = city_env.observation_space.shape
+actions = city_env.action_space.n
+
+def build_model(states,actions):
+    model = Sequential()
+    model.add(Dense(64,activation='relu',input_shape=states))
+    model.addd(Dense(64,activation='relu'))
+    model.add(Dense(actions,activation='linear'))
+    return model
+
+model = build_model(states,actions)
+model.summary()
+
+
+def build_agent(model,actions):
+    policy = BoltzmannQPolicy()
+    memory = SequentialMemory(limit=10000,window_length=1)
+    dqn = DQNAgent(model=model,memory=memory,policy=policy,nb_actions=actions,nb_steps_warmup=10,target_model_update=1e-2)
+    return dqn
+
+dqn = build_agent(model,actions)
+dqn.compile(Adam(lr=1e-3),metrics=['mae'])
+dqn.fit(city_env,nb_steps=60000,visualize=True,verbose=1)  
+
+results = dqn.test(city_env,nb_episodes=150,visualize=True)
+print(np.mean(results.history['episode_reward']))
+
+'''
 print(city_env.used_coords)
 city_env.step(0)
+city_env.render()
+city_env.step(1)
+city_env.step(2)
+'''
