@@ -1,10 +1,10 @@
 import gym
 from gym import spaces
-from agents import *
 import json
 import random
 import os
 import numpy as np
+from stable_baselines3 import A2C
 
 class CityBuilderEnv(gym.Env):
     def __init__(self):
@@ -15,8 +15,6 @@ class CityBuilderEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=1, shape=(2,), dtype=float)  # Population, City Type
 
         # Set the initial state
-        self.population = None
-        self.city_type = None
         self.used_coords = []
         self.data = {}
         self.map_data = {}
@@ -26,10 +24,7 @@ class CityBuilderEnv(gym.Env):
         self.map_data = existing_data = json.load(self.fstream)
         for i in existing_data["objects"]:
             self.used_coords.append((i["x"], i["y"]))
-    def reset(self, population, city_type):
-        # Reset the environment to a new state
-        self.population = population
-        self.city_type = city_type
+    def reset():
 
         return self._get_observation()
 
@@ -82,20 +77,22 @@ class CityBuilderEnv(gym.Env):
         return self._get_observation(), reward, done, {}
 
     def _get_observation(self):
-        # Return the current state as the observation
-        return [self.population, self.city_type]
+        num_houses_added = 0
+        num_factories_added = 0
+        num_gardens_added = 0
 
+        for obj in self.map_data["objects"]:
+            if obj["type"] == "house":
+                num_houses_added += 1
+            elif obj["type"] == "factory":
+                num_factories_added += 1
+            elif obj["type"] == "garden":
+                num_gardens_added += 1
+
+        return num_factories_added
+        
     def _calculate_reward(self):
-    # Get the current population and city type from the observation
-        current_population, current_city_type = self._get_observation()
-
-    # Calculate the reward based on the changes in population and building additions
         reward = 0
-
-    # Calculate the population increment based on the difference from the previous population
-        if self.population is not None:
-            population_increment = self.population - current_population
-            reward += population_increment
 
     # Calculate the reward for each building type based on the number of buildings added
         num_houses_added = 0
@@ -131,6 +128,25 @@ class CityBuilderEnv(gym.Env):
 
 
 city_env = CityBuilderEnv()
+states = city_env.observation_space.shape
+actions = city_env.action_space.n
+
+model = A2C("MlpPolicy", city_env, verbose=1)
+model.learn(total_timesteps=10_000)
+
+vec_env = model.get_env()
+obs = vec_env.reset()
+for i in range(1000):
+    action, _state = model.predict(obs, deterministic=True)
+    obs, reward, done, info = vec_env.step(action)
+    #vec_env.render("human")
+    # VecEnv resets automatically
+    '''
+    if done:
+        obs = vec_env.reset()
+        '''
+
+
 '''
 print(city_env.used_coords)
 city_env.step(0)
@@ -138,50 +154,3 @@ city_env.render()
 city_env.step(1)
 city_env.step(2)
 '''
-# Define Q-learning parameters
-learning_rate = 0.1
-discount_factor = 0.9
-epsilon = 0.1
-num_episodes = 1000
-
-# Create the environment (CityBuilderEnv instance)
-city_env = CityBuilderEnv()
-
-# Create the Q-learning agent
-q_agent = QLearningAgent(city_env.action_space, city_env.observation_space)
-
-# Q-learning training loop
-for episode in range(num_episodes):
-    state = city_env.reset(population=np.random.uniform(0, 1), city_type=np.random.uniform(0, 1))
-    done = False
-
-    while not done:
-        # Choose action using epsilon-greedy strategy
-        action = q_agent.choose_action(state)
-        
-        next_state, reward, done, _ = city_env.step(action)
-        next_state_idx = np.argmax(next_state)
-        
-        # Update Q-values
-        q_agent.update_q_table(state, action, reward, next_state_idx)
-
-        state = next_state
-
-print("Training completed.")
-
-# Evaluate the trained agent
-num_eval_episodes = 10
-total_rewards = 0
-
-for _ in range(num_eval_episodes):
-    state = city_env.reset(population=np.random.uniform(0, 1), city_type=np.random.uniform(0, 1))
-    done = False
-
-    while not done:
-        action = np.argmax(q_agent.q_table[state, :])
-        next_state, reward, done, _ = city_env.step(action)
-        total_rewards += reward
-        state = next_state
-
-average_rewards = total_rewards / num_eval_episodes
-print("Average rewards:", average_rewards)
